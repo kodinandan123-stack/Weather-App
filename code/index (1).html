@@ -1,130 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Skye — Weather App</title>
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Skye — Weather</title>
+<link rel="stylesheet" href="style.css"/>
 </head>
-<body class="bg-default">
+<body class="theme-default">
 
-  <!-- Animated background blobs -->
-  <div class="bg-layer" id="bgLayer">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
+<div class="blobs">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+</div>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <div class="brand">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="14" r="14" fill="rgba(255,255,255,0.15)"/><circle cx="14" cy="14" r="6" fill="white"/></svg>
+      <span>Skye</span>
+    </div>
+    <div class="unit-sw">
+      <button class="ub active" id="btnC" onclick="setUnit('metric')">°C</button>
+      <button class="ub" id="btnF" onclick="setUnit('imperial')">°F</button>
+    </div>
+  </header>
+
+  <!-- SEARCH -->
+  <div class="search-wrap">
+    <div class="search-box">
+      <svg class="s-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search city…" autocomplete="off" spellcheck="false"/>
+      <button class="s-btn" id="searchBtn">Search</button>
+    </div>
   </div>
 
-  <div class="app-wrap">
+  <!-- STATES -->
+  <div class="loader hidden" id="loader">
+    <div class="spinner"></div>
+    <p>Fetching weather…</p>
+  </div>
 
-    <!-- Header -->
-    <header class="app-header">
-      <div class="brand">
-        <span class="brand-icon">◎</span>
-        <span class="brand-name">Skye</span>
-      </div>
-      <div class="unit-toggle">
-        <button class="unit-btn active" id="btnC" onclick="setUnit('metric')">°C</button>
-        <button class="unit-btn" id="btnF" onclick="setUnit('imperial')">°F</button>
-      </div>
-    </header>
+  <div class="err-card hidden" id="errCard">
+    <span>⚠</span>
+    <p id="errMsg">City not found.</p>
+  </div>
 
-    <!-- Search -->
-    <div class="search-wrap">
-      <div class="search-box">
-        <span class="search-icon">⌕</span>
-        <input
-          type="text"
-          id="searchInput"
-          placeholder="Search city…"
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <button class="search-btn" id="searchBtn">Search</button>
+  <!-- WEATHER CONTENT -->
+  <div class="weather hidden" id="weather">
+
+    <!-- Current -->
+    <div class="cur-card">
+      <div class="cur-left">
+        <div class="city" id="city">—</div>
+        <div class="loc-date">
+          <span id="country"></span>
+          <span class="dot">·</span>
+          <span id="wdate"></span>
+        </div>
+        <div class="temp-row">
+          <span class="temp-big" id="tempBig">—</span>
+          <span class="temp-unit" id="tempUnit">°C</span>
+        </div>
+        <div class="cond" id="cond">—</div>
+        <div class="feels" id="feels">Feels like —</div>
+      </div>
+      <div class="cur-right">
+        <img id="wicon" src="" alt="" class="w-icon"/>
+        <div class="cond-badge" id="condBadge"></div>
       </div>
     </div>
 
-    <!-- Loading Spinner -->
-    <div class="loader-wrap" id="loader">
-      <div class="spinner"></div>
-      <p>Fetching weather…</p>
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="sb-ico">💧</div>
+        <div class="sb-val" id="sHum">—</div>
+        <div class="sb-lab">Humidity</div>
+      </div>
+      <div class="stat-box">
+        <div class="sb-ico">💨</div>
+        <div class="sb-val" id="sWind">—</div>
+        <div class="sb-lab">Wind</div>
+      </div>
+      <div class="stat-box">
+        <div class="sb-ico">👁</div>
+        <div class="sb-val" id="sVis">—</div>
+        <div class="sb-lab">Visibility</div>
+      </div>
+      <div class="stat-box">
+        <div class="sb-ico">🌡</div>
+        <div class="sb-val" id="sPres">—</div>
+        <div class="sb-lab">Pressure</div>
+      </div>
     </div>
 
-    <!-- Error Message -->
-    <div class="error-card" id="errorCard">
-      <div class="error-icon">⚠</div>
-      <p id="errorMsg">City not found. Please try again.</p>
-    </div>
-
-    <!-- Main Weather Card -->
-    <div class="weather-main" id="weatherMain">
-
-      <div class="current-card">
-        <div class="current-left">
-          <div class="city-name" id="cityName">—</div>
-          <div class="country-date">
-            <span id="countryName"></span>
-            <span class="dot">·</span>
-            <span id="currentDate"></span>
-          </div>
-          <div class="temp-display">
-            <span class="temp-num" id="tempNum">—</span>
-            <span class="temp-unit" id="tempUnit">°C</span>
-          </div>
-          <div class="condition-text" id="conditionText">—</div>
-          <div class="feels-like">Feels like <span id="feelsLike">—</span></div>
-        </div>
-        <div class="current-right">
-          <div class="weather-icon-wrap" id="weatherIconWrap">
-            <img id="weatherIcon" src="" alt="weather icon" />
-          </div>
-          <div class="condition-label" id="conditionLabel"></div>
-        </div>
-      </div>
-
-      <!-- Stats Row -->
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-icon">💧</div>
-          <div class="stat-value" id="humidity">—</div>
-          <div class="stat-label">Humidity</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">💨</div>
-          <div class="stat-value" id="windSpeed">—</div>
-          <div class="stat-label">Wind Speed</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">👁</div>
-          <div class="stat-value" id="visibility">—</div>
-          <div class="stat-label">Visibility</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">🌡</div>
-          <div class="stat-value" id="pressure">—</div>
-          <div class="stat-label">Pressure</div>
-        </div>
-      </div>
-
-      <!-- 5-Day Forecast -->
-      <div class="forecast-section">
-        <h3 class="forecast-title">5-Day Forecast</h3>
-        <div class="forecast-grid" id="forecastGrid">
-          <!-- filled by JS -->
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Default prompt -->
-    <div class="default-prompt" id="defaultPrompt">
-      <div class="prompt-icon">🌍</div>
-      <p>Enter a city name to get the weather</p>
+    <!-- 5-day forecast -->
+    <div class="fc-section">
+      <h3 class="fc-title">5-Day Forecast</h3>
+      <div class="fc-grid" id="fcGrid"></div>
     </div>
 
   </div>
 
-  <script src="script.js"></script>
+  <!-- DEFAULT -->
+  <div class="default-state" id="defaultState">
+    <div class="ds-icon">🌍</div>
+    <p>Enter a city to see the weather</p>
+  </div>
+
+</div>
+<script src="script.js"></script>
 </body>
 </html>
