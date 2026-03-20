@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Skye — Weather App</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+</head>
+<body class="bg-default">
+
+  <!-- Animated background blobs -->
+  <div class="bg-layer" id="bgLayer">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="app-wrap">
+
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-icon">◎</span>
+        <span class="brand-name">Skye</span>
+      </div>
+      <div class="unit-toggle">
+        <button class="unit-btn active" id="btnC" onclick="setUnit('metric')">°C</button>
+        <button class="unit-btn" id="btnF" onclick="setUnit('imperial')">°F</button>
+      </div>
+    </header>
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <div class="search-box">
+        <span class="search-icon">⌕</span>
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search city…"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button class="search-btn" id="searchBtn">Search</button>
+      </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loader-wrap" id="loader">
+      <div class="spinner"></div>
+      <p>Fetching weather…</p>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-card" id="errorCard">
+      <div class="error-icon">⚠</div>
+      <p id="errorMsg">City not found. Please try again.</p>
+    </div>
+
+    <!-- Main Weather Card -->
+    <div class="weather-main" id="weatherMain">
+
+      <div class="current-card">
+        <div class="current-left">
+          <div class="city-name" id="cityName">—</div>
+          <div class="country-date">
+            <span id="countryName"></span>
+            <span class="dot">·</span>
+            <span id="currentDate"></span>
+          </div>
+          <div class="temp-display">
+            <span class="temp-num" id="tempNum">—</span>
+            <span class="temp-unit" id="tempUnit">°C</span>
+          </div>
+          <div class="condition-text" id="conditionText">—</div>
+          <div class="feels-like">Feels like <span id="feelsLike">—</span></div>
+        </div>
+        <div class="current-right">
+          <div class="weather-icon-wrap" id="weatherIconWrap">
+            <img id="weatherIcon" src="" alt="weather icon" />
+          </div>
+          <div class="condition-label" id="conditionLabel"></div>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon">💧</div>
+          <div class="stat-value" id="humidity">—</div>
+          <div class="stat-label">Humidity</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💨</div>
+          <div class="stat-value" id="windSpeed">—</div>
+          <div class="stat-label">Wind Speed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">👁</div>
+          <div class="stat-value" id="visibility">—</div>
+          <div class="stat-label">Visibility</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🌡</div>
+          <div class="stat-value" id="pressure">—</div>
+          <div class="stat-label">Pressure</div>
+        </div>
+      </div>
+
+      <!-- 5-Day Forecast -->
+      <div class="forecast-section">
+        <h3 class="forecast-title">5-Day Forecast</h3>
+        <div class="forecast-grid" id="forecastGrid">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Default prompt -->
+    <div class="default-prompt" id="defaultPrompt">
+      <div class="prompt-icon">🌍</div>
+      <p>Enter a city name to get the weather</p>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
