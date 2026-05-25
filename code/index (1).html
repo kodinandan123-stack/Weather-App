@@ -3,347 +3,264 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Skye — Weather App</title>
+<title>Skye Weather v2</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --f:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Arial,sans-serif;
-  --g:rgba(255,255,255,.13);
-  --gb:rgba(255,255,255,.22);
-  --gh:rgba(255,255,255,.18);
-  --w:rgba(255,255,255,.90);
-  --s:rgba(255,255,255,.60);
-  --m:rgba(255,255,255,.38);
-  --r:16px;--rs:10px;
-  --tr:.3s cubic-bezier(.4,0,.2,1);
+  --g:rgba(255,255,255,.13);--gb:rgba(255,255,255,.22);--gh:rgba(255,255,255,.20);
+  --w:rgba(255,255,255,.90);--s:rgba(255,255,255,.60);--m:rgba(255,255,255,.38);
+  --r:16px;--rs:12px;--tr:.3s cubic-bezier(.4,0,.2,1);
 }
 html,body{min-height:100vh;font-family:var(--f);font-size:15px;color:#fff;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-body{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 55%,#0f3460 100%);transition:background 1.2s ease}
+body{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 55%,#0f3460 100%);transition:background 1.4s ease}
 body.clear{background:linear-gradient(135deg,#f7971e,#e05c2c,#c0392b)}
 body.clouds{background:linear-gradient(135deg,#485563,#29323c)}
 body.rain{background:linear-gradient(135deg,#0f2027,#203a43,#2c5364)}
 body.thunder{background:linear-gradient(135deg,#0d0d0d,#1c1c3a,#2c2c54)}
 body.snow{background:linear-gradient(135deg,#74b9ff,#a29bfe,#dfe6e9);color:#1a1a2e}
 body.mist{background:linear-gradient(135deg,#636e72,#2d3436,#4b6cb7)}
-
-/* blobs */
 .blobs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
-.blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18;animation:bd 14s ease-in-out infinite alternate}
-.b1{width:500px;height:500px;background:#fff;top:-150px;left:-150px}
-.b2{width:360px;height:360px;background:#fff;bottom:-100px;right:-100px;animation-duration:18s;animation-direction:alternate-reverse}
-.b3{width:260px;height:260px;background:#fff;top:50%;left:58%;transform:translate(-50%,-50%);animation-duration:11s}
-@keyframes bd{from{transform:translate(0,0) scale(1)}to{transform:translate(35px,25px) scale(1.07)}}
-
-/* app */
-.app{position:relative;z-index:1;max-width:740px;margin:0 auto;padding:24px 20px 56px}
-
-/* header */
-.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}
-.brand{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800;letter-spacing:-.4px}
-.bdot{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.55);flex-shrink:0}
+.blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.15;animation:bd 14s ease-in-out infinite alternate}
+.b1{width:520px;height:520px;background:#fff;top:-160px;left:-160px}
+.b2{width:380px;height:380px;background:#fff;bottom:-110px;right:-110px;animation-duration:18s;animation-direction:alternate-reverse}
+.b3{width:280px;height:280px;background:#fff;top:50%;left:60%;transform:translate(-50%,-50%);animation-duration:11s}
+@keyframes bd{from{transform:translate(0,0) scale(1)}to{transform:translate(35px,25px) scale(1.08)}}
+.app{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:28px 20px 64px}
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;font-size:23px;font-weight:900;letter-spacing:-.5px}
+.bdot{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.28);border:2px solid rgba(255,255,255,.6);flex-shrink:0;animation:pulse 3s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.3)}50%{box-shadow:0 0 0 8px rgba(255,255,255,0)}}
+.badge{font-size:10px;background:rgba(255,255,255,.25);border-radius:20px;padding:2px 8px;font-weight:700;vertical-align:middle;margin-left:4px}
 .usw{display:flex;background:var(--g);border:1px solid var(--gb);border-radius:40px;padding:3px;gap:2px}
 .ub{padding:7px 16px;border-radius:30px;border:none;background:transparent;color:var(--s);font-family:var(--f);font-size:13px;font-weight:700;cursor:pointer;transition:var(--tr)}
 .ub.on{background:rgba(255,255,255,.25);color:#fff}
-
-/* notice */
-.notice{background:rgba(255,200,0,.16);border:1px solid rgba(255,200,0,.40);border-radius:var(--rs);padding:14px 18px;margin-bottom:18px;font-size:13.5px;line-height:1.6;color:#ffe082}
-.notice strong{display:block;margin-bottom:4px;font-size:14px}
-.notice a{color:#fff;font-weight:700}
-
-/* search */
-.sw{margin-bottom:22px}
-.sbox{display:flex;align-items:center;background:var(--g);border:1.5px solid var(--gb);border-radius:50px;padding:5px 5px 5px 18px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:var(--tr)}
-.sbox:focus-within{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.45);box-shadow:0 0 0 4px rgba(255,255,255,.08)}
-.si{flex-shrink:0;opacity:.6;margin-right:8px}
+.api-banner{background:rgba(255,200,0,.14);border:1px solid rgba(255,200,0,.38);border-radius:var(--rs);padding:16px 18px;margin-bottom:20px;font-size:13.5px;line-height:1.6;color:#ffe082}
+.api-banner strong{display:block;margin-bottom:8px;font-size:14px}
+.api-row{display:flex;gap:8px;flex-wrap:wrap}
+.api-row input{flex:1;min-width:180px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);border-radius:8px;color:#fff;font-family:var(--f);font-size:13.5px;padding:8px 12px;outline:none}
+.api-row input::placeholder{color:rgba(255,255,255,.4)}
+.api-row button{background:rgba(255,200,0,.4);border:1px solid rgba(255,200,0,.6);color:#fff;border-radius:8px;padding:8px 16px;font-family:var(--f);font-weight:700;font-size:13px;cursor:pointer}
+.api-row button:hover{background:rgba(255,200,0,.6)}
+.api-link{color:#fff;font-size:12px;opacity:.8;display:block;margin-top:6px}
+.sw{margin-bottom:10px}
+.sbox{display:flex;align-items:center;background:var(--g);border:1.5px solid var(--gb);border-radius:50px;padding:5px 5px 5px 18px;backdrop-filter:blur(14px);transition:var(--tr);gap:6px}
+.sbox:focus-within{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.48);box-shadow:0 0 0 4px rgba(255,255,255,.09)}
+.si-icon{flex-shrink:0;opacity:.55;margin-right:4px}
 .sbox input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-family:var(--f);font-size:15.5px;min-width:0}
 .sbox input::placeholder{color:var(--m)}
+.geo-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:40px;padding:9px 14px;font-family:var(--f);font-weight:700;font-size:12.5px;cursor:pointer;transition:var(--tr);flex-shrink:0;white-space:nowrap}
+.geo-btn:hover{background:rgba(255,255,255,.28)}
 .sbtn{background:rgba(255,255,255,.93);color:#1a1a2e;border:none;border-radius:40px;padding:10px 22px;font-family:var(--f);font-weight:800;font-size:13.5px;cursor:pointer;transition:var(--tr);flex-shrink:0}
-.sbtn:hover{background:#fff;transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.2)}
-.sbtn:active{transform:none}
-
-/* utils */
-.hidden{display:none!important}
-
-/* loader */
-.loader{display:flex;flex-direction:column;align-items:center;gap:14px;padding:70px 0;color:var(--s);font-size:14px}
-.spin{width:44px;height:44px;border:3px solid rgba(255,255,255,.2);border-top-color:rgba(255,255,255,.9);border-radius:50%;animation:spin .75s linear infinite}
+.sbtn:hover{background:#fff;transform:translateY(-1px);box-shadow:0 4px 18px rgba(0,0,0,.22)}
+.hist{display:flex;align-items:center;flex-wrap:wrap;min-height:30px;margin-bottom:16px;gap:4px}
+.hist-label{font-size:11.5px;opacity:.5;margin-right:4px}
+.hist-btn{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:20px;padding:4px 12px;font-size:12.5px;cursor:pointer;font-family:var(--f);transition:.2s ease}
+.hist-btn:hover{background:rgba(255,255,255,.26)}
+.loader{display:flex;flex-direction:column;align-items:center;gap:14px;padding:72px 0;color:var(--s);font-size:14px}
+.spin{width:46px;height:46px;border:3px solid rgba(255,255,255,.18);border-top-color:rgba(255,255,255,.9);border-radius:50%;animation:spin .75s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* error */
 .ebox{display:flex;align-items:center;gap:12px;background:rgba(255,80,80,.18);border:1px solid rgba(255,80,80,.35);border-radius:var(--rs);padding:14px 18px;margin-bottom:16px;animation:fup .3s ease}
 .ebox p{color:#ffb3b3;font-size:14px}
-
-/* default */
-.def{text-align:center;padding:70px 20px}
-.def-i{font-size:60px;margin-bottom:14px;animation:fl 3s ease-in-out infinite}
+.def{text-align:center;padding:72px 20px}
+.def-i{font-size:64px;margin-bottom:16px;animation:fl 3s ease-in-out infinite}
 @keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .def p{font-size:16px;color:var(--w)}
 @keyframes fup{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-
-/* weather wrap */
-.ww{display:flex;flex-direction:column;gap:16px;animation:fup .45s ease}
-
-/* current card */
-.cc{background:var(--g);border:1px solid var(--gb);border-radius:20px;padding:28px 26px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:0 8px 32px rgba(0,0,0,.25)}
+.ww{display:flex;flex-direction:column;gap:14px;animation:fup .45s ease}
+.cc{background:var(--g);border:1px solid var(--gb);border-radius:22px;padding:30px 28px;backdrop-filter:blur(18px);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:0 10px 40px rgba(0,0,0,.28)}
 .cl{flex:1;min-width:200px}
-.cn{font-size:32px;font-weight:900;letter-spacing:-.5px;margin-bottom:4px}
-.ll{font-size:13px;color:var(--s);display:flex;align-items:center;gap:6px;margin-bottom:16px}
-.ld{color:rgba(255,255,255,.25)}
+.cn{font-size:34px;font-weight:900;letter-spacing:-.5px;margin-bottom:4px}
+.ll{font-size:13px;color:var(--s);display:flex;align-items:center;gap:6px;margin-bottom:18px}
+.ld{color:rgba(255,255,255,.22)}
 .td{display:flex;align-items:flex-start;line-height:1;margin-bottom:8px}
-.tn{font-size:82px;font-weight:900;letter-spacing:-3px;line-height:1}
-.tu{font-size:28px;font-weight:300;margin-top:10px;opacity:.7}
-.ct{font-size:18px;font-weight:600;text-transform:capitalize;margin-bottom:4px}
+.tn{font-size:88px;font-weight:900;letter-spacing:-3px;line-height:1}
+.tu{font-size:30px;font-weight:300;margin-top:12px;opacity:.65}
+.ct{font-size:19px;font-weight:600;text-transform:capitalize;margin-bottom:4px}
 .ft{font-size:13px;color:var(--s)}
-.cr{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0}
-.wi{width:110px;height:110px;object-fit:contain;filter:drop-shadow(0 4px 16px rgba(0,0,0,.3));animation:wb 4s ease-in-out infinite}
-@keyframes wb{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-.cb{font-size:11.5px;color:var(--s);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
-
-/* stats */
+.cr{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0}
+.wi{width:116px;height:116px;object-fit:contain;filter:drop-shadow(0 6px 20px rgba(0,0,0,.35));animation:wb 4s ease-in-out infinite}
+@keyframes wb{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.cb{font-size:11.5px;color:var(--s);text-transform:uppercase;letter-spacing:.09em;font-weight:700}
 .sr{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.sc{background:var(--g);border:1px solid var(--gb);border-radius:var(--rs);padding:16px 10px;text-align:center;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:var(--tr)}
-.sc:hover{background:var(--gh);transform:translateY(-3px)}
-.si2{font-size:22px;margin-bottom:7px}
-.sv{font-size:18px;font-weight:800;margin-bottom:2px}
+.sc{background:var(--g);border:1px solid var(--gb);border-radius:var(--rs);padding:18px 10px;text-align:center;backdrop-filter:blur(10px);transition:var(--tr)}
+.sc:hover{background:var(--gh);transform:translateY(-4px);box-shadow:0 6px 20px rgba(0,0,0,.2)}
+.si2{font-size:24px;margin-bottom:8px}
+.sv{font-size:18px;font-weight:800;margin-bottom:3px}
 .sl{font-size:11px;color:var(--s);text-transform:uppercase;letter-spacing:.07em}
-
-/* forecast */
-.fc{background:var(--g);border:1px solid var(--gb);border-radius:20px;padding:20px 22px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.fl2{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.10em;color:var(--s);margin-bottom:14px}
+.ss-row{display:flex;justify-content:center;gap:24px;padding:16px 22px;background:var(--g);border:1px solid var(--gb);border-radius:var(--rs);backdrop-filter:blur(10px);flex-wrap:wrap}
+.ss-item{display:flex;align-items:center;gap:10px}
+.ss-icon{font-size:26px}
+.ss-label{font-size:11px;opacity:.55;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.ss-time{font-size:17px;font-weight:800}
+.extras-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.extra-card{background:var(--g);border:1px solid var(--gb);border-radius:var(--rs);padding:18px 20px;backdrop-filter:blur(10px)}
+.extra-title{font-size:11px;color:var(--s);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.extra-value{font-size:26px;font-weight:900;margin-bottom:4px}
+.extra-sub{font-size:12px;color:var(--s)}
+.uv-bar-wrap{background:rgba(255,255,255,.1);border-radius:4px;height:6px;margin-top:10px;overflow:hidden}
+.uv-bar{height:6px;border-radius:4px;transition:width .8s ease}
+.fc{background:var(--g);border:1px solid var(--gb);border-radius:22px;padding:22px 24px;backdrop-filter:blur(10px)}
+.fl2{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.10em;color:var(--s);margin-bottom:16px}
 .fg{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.fd{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:var(--rs);padding:14px 6px;text-align:center;transition:var(--tr)}
-.fd:hover{background:rgba(255,255,255,.14);transform:translateY(-2px)}
+.fd{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:var(--rs);padding:15px 6px;text-align:center;transition:var(--tr)}
+.fd:hover{background:rgba(255,255,255,.15);transform:translateY(-3px)}
 .fn{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--s);margin-bottom:6px}
 .fi img{width:40px;height:40px;object-fit:contain}
-.ft2{margin-top:6px;display:flex;justify-content:center;gap:4px;font-size:12px}
-.fh{font-weight:800}
-.fo{color:var(--s)}
-.fd2{font-size:10px;color:var(--m);margin-top:2px;text-transform:capitalize}
-
+.ft2{margin-top:6px;display:flex;justify-content:center;gap:5px;font-size:12.5px}
+.fh{font-weight:800}.fo{color:var(--s)}
+.fd2{font-size:10px;color:var(--m);margin-top:3px;text-transform:capitalize;line-height:1.3}
+.footer{text-align:center;margin-top:32px;font-size:12px;color:var(--m)}
+.hidden{display:none!important}
 @media(max-width:580px){
-  .app{padding:16px 14px 48px}
-  .cn{font-size:26px}.tn{font-size:60px}
-  .cc{padding:20px 16px}.wi{width:84px;height:84px}
-  .sr{grid-template-columns:repeat(2,1fr)}
-  .fg{gap:4px}.fi img{width:34px;height:34px}
+  .app{padding:16px 14px 48px}.cn{font-size:26px}.tn{font-size:64px}
+  .cc{padding:20px 16px}.wi{width:88px;height:88px}
+  .sr{grid-template-columns:repeat(2,1fr)}.fg{gap:4px}.fi img{width:34px;height:34px}
+  .extras-row{grid-template-columns:1fr}
 }
 @media(max-width:380px){.fg{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
-
-<div class="blobs">
-  <div class="blob b1"></div>
-  <div class="blob b2"></div>
-  <div class="blob b3"></div>
-</div>
-
+<div class="blobs"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
 <div class="app">
-
   <header class="hdr">
-    <div class="brand"><div class="bdot"></div>Skye</div>
+    <div class="brand"><div class="bdot"></div>Skye<span class="badge">v2</span></div>
     <div class="usw">
-      <button class="ub on" id="btnC">°C</button>
-      <button class="ub" id="btnF">°F</button>
+      <button class="ub on" id="btnC" onclick="sw('metric')">°C</button>
+      <button class="ub" id="btnF" onclick="sw('imperial')">°F</button>
     </div>
   </header>
-
-  <div class="notice hidden" id="apiNotice">
-    <strong>⚠ API Key Required</strong>
-    Scroll to the bottom of this file, find <code>YOUR_API_KEY_HERE</code> and replace it
-    with your free key from
-    <a href="https://openweathermap.org/api" target="_blank">openweathermap.org/api</a>
-    — free signup, 2 minutes.
+  <div class="api-banner" id="apiBanner">
+    <strong>⚠ Enter your free OpenWeatherMap API key to get started</strong>
+    <div class="api-row">
+      <input type="text" id="apiKeyInput" placeholder="Paste your API key here…" autocomplete="off"/>
+      <button onclick="saveKey()">Save Key</button>
+    </div>
+    <a class="api-link" href="https://openweathermap.org/api" target="_blank">→ Get a free key at openweathermap.org/api</a>
   </div>
-
   <div class="sw">
     <div class="sbox">
-      <svg class="si" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
+      <svg class="si-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input type="text" id="searchInput" placeholder="Search city… e.g. London" autocomplete="off" spellcheck="false"/>
+      <button class="geo-btn" id="geoBtn" onclick="useMyLocation()">📍 My Location</button>
       <button class="sbtn" id="searchBtn">Search</button>
     </div>
   </div>
-
+  <div class="hist" id="histRow"></div>
   <div class="loader hidden" id="loader"><div class="spin"></div><p>Fetching weather…</p></div>
-
-  <div class="ebox hidden" id="errBox">
-    <span style="font-size:20px">⚠</span>
-    <p id="errMsg">City not found.</p>
-  </div>
-
+  <div class="ebox hidden" id="errBox"><span style="font-size:20px">⚠</span><p id="errMsg">City not found.</p></div>
   <div class="ww hidden" id="ww">
     <div class="cc">
       <div class="cl">
         <div class="cn" id="cityName">—</div>
-        <div class="ll">
-          <span id="cntry"></span>
-          <span class="ld">·</span>
-          <span id="dt"></span>
-        </div>
-        <div class="td">
-          <span class="tn" id="tnum">—</span>
-          <span class="tu" id="tunit">°C</span>
-        </div>
+        <div class="ll"><span id="cntry"></span><span class="ld">·</span><span id="dt"></span></div>
+        <div class="td"><span class="tn" id="tnum">—</span><span class="tu" id="tunit">°C</span></div>
         <div class="ct" id="condTxt">—</div>
         <div class="ft" id="feelsTxt">Feels like —</div>
       </div>
-      <div class="cr">
-        <img class="wi" id="wicon" src="" alt="weather icon"/>
-        <div class="cb" id="condBadge"></div>
-      </div>
+      <div class="cr"><img class="wi" id="wicon" src="" alt="weather icon"/><div class="cb" id="condBadge"></div></div>
     </div>
-
     <div class="sr">
       <div class="sc"><div class="si2">💧</div><div class="sv" id="sHum">—</div><div class="sl">Humidity</div></div>
       <div class="sc"><div class="si2">💨</div><div class="sv" id="sWind">—</div><div class="sl">Wind</div></div>
       <div class="sc"><div class="si2">👁</div><div class="sv" id="sVis">—</div><div class="sl">Visibility</div></div>
       <div class="sc"><div class="si2">🌡</div><div class="sv" id="sPres">—</div><div class="sl">Pressure</div></div>
     </div>
-
-    <div class="fc">
-      <div class="fl2">5-Day Forecast</div>
-      <div class="fg" id="fcGrid"></div>
+    <div class="ss-row" id="ssRow" style="display:none">
+      <div class="ss-item"><div class="ss-icon">🌅</div><div><div class="ss-label">Sunrise</div><div class="ss-time" id="ssRise">—</div></div></div>
+      <div class="ss-item"><div class="ss-icon">🌇</div><div><div class="ss-label">Sunset</div><div class="ss-time" id="ssSet">—</div></div></div>
     </div>
+    <div class="extras-row">
+      <div class="extra-card">
+        <div class="extra-title">☀ UV Index</div>
+        <div class="extra-value" id="uvVal">—</div>
+        <div class="extra-sub" id="uvLabel">—</div>
+        <div class="uv-bar-wrap"><div class="uv-bar" id="uvBar" style="width:0%;background:#4caf50"></div></div>
+      </div>
+      <div class="extra-card">
+        <div class="extra-title">🌬 Wind Direction</div>
+        <div class="extra-value" id="wdirVal">—</div>
+        <div class="extra-sub" id="wdirLabel">—</div>
+      </div>
+    </div>
+    <div class="fc"><div class="fl2">5-Day Forecast</div><div class="fg" id="fcGrid"></div></div>
   </div>
-
-  <div class="def" id="def">
-    <div class="def-i">🌍</div>
-    <p>Enter a city name to see the weather</p>
-  </div>
-
+  <div class="def" id="def"><div class="def-i">🌍</div><p>Enter a city name or use My Location to see the weather</p></div>
+  <div class="footer">Skye Weather v2 · Built by Nandan Kodi · Powered by OpenWeatherMap</div>
 </div>
-
 <script>
-/* ============================================================
-   STEP 1 — Get your FREE key at: https://openweathermap.org/api
-   STEP 2 — Replace YOUR_API_KEY_HERE below with your actual key
-   STEP 3 — Save this file and open it in your browser
-   ============================================================ */
-const KEY  = 'YOUR_API_KEY_HERE';
-const BASE = 'https://api.openweathermap.org/data/2.5';
-
-let unit = 'metric', lastCity = '';
-
-/* DOM */
-const $  = id => document.getElementById(id);
-const SI = $('searchInput'), SB = $('searchBtn');
-const LO = $('loader'), EB = $('errBox'), EM = $('errMsg');
-const WW = $('ww'), DEF = $('def'), AN = $('apiNotice');
-
-if (KEY === 'YOUR_API_KEY_HERE') AN.classList.remove('hidden');
-
-/* Unit toggle */
-$('btnC').onclick = () => sw('metric');
-$('btnF').onclick = () => sw('imperial');
-function sw(u){
-  unit = u;
-  $('btnC').classList.toggle('on', u==='metric');
-  $('btnF').classList.toggle('on', u==='imperial');
-  if(lastCity) go(lastCity);
-}
-
-/* Search */
-SB.onclick = () => go(SI.value.trim());
-SI.addEventListener('keydown', e => { if(e.key==='Enter') go(SI.value.trim()); });
-
-function go(city){
-  if(!city) return;
-  if(KEY==='YOUR_API_KEY_HERE'){
-    show(EB); EM.textContent='Please add your API key inside this HTML file first.'; return;
-  }
-  fetch2(city);
-}
-
-/* Fetch */
-async function fetch2(city){
-  lastCity = city;
-  show(LO); hide(EB); hide(WW); hide(DEF);
-  try {
-    const [cur, fc] = await Promise.all([
-      api(`${BASE}/weather?q=${enc(city)}&units=${unit}&appid=${KEY}`),
-      api(`${BASE}/forecast?q=${enc(city)}&units=${unit}&appid=${KEY}`)
-    ]);
-    hide(LO);
-    renderCur(cur);
-    renderFC(fc);
-    show(WW);
-  } catch(e){
-    hide(LO); EM.textContent=e.message; show(EB); show(DEF);
-  }
-}
-
-async function api(url){
-  const r = await fetch(url);
-  if(!r.ok){
-    if(r.status===404) throw new Error('City not found. Check the spelling and try again.');
-    if(r.status===401) throw new Error('Invalid API key. Check your key inside this file.');
-    throw new Error(`Error ${r.status}. Please try again.`);
-  }
-  return r.json();
-}
-
-/* Render current */
-function renderCur(d){
-  const u = unit==='metric'?'°C':'°F';
-  const wu= unit==='metric'?'km/h':'mph';
-  const wm= unit==='metric'?3.6:1;
-  $('cityName').textContent = d.name;
-  $('cntry').textContent    = d.sys.country;
-  $('dt').textContent       = new Date().toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
-  $('tnum').textContent     = Math.round(d.main.temp);
-  $('tunit').textContent    = u;
-  $('condTxt').textContent  = d.weather[0].description;
-  $('condBadge').textContent= d.weather[0].main;
-  $('feelsTxt').textContent = `Feels like ${Math.round(d.main.feels_like)}${u}`;
-  const img = $('wicon');
-  img.src = `https://openweathermap.org/img/wn/${d.weather[0].icon}@2x.png`;
-  img.alt = d.weather[0].description;
-  $('sHum').textContent  = `${d.main.humidity}%`;
-  $('sWind').textContent = `${Math.round(d.wind.speed*wm)} ${wu}`;
-  $('sVis').textContent  = d.visibility?`${(d.visibility/1000).toFixed(1)} km`:'N/A';
-  $('sPres').textContent = `${d.main.pressure} hPa`;
-  setTheme(d.weather[0].main, d.weather[0].icon);
-}
-
-/* Render forecast */
-function renderFC(data){
-  const u = unit==='metric'?'°C':'°F';
-  const days = {};
-  data.list.forEach(i=>{
-    const date=i.dt_txt.split(' ')[0], time=i.dt_txt.split(' ')[1];
-    if(!days[date]&&time>='11:00:00'&&time<='14:00:00') days[date]=i;
-  });
-  data.list.forEach(i=>{ const d=i.dt_txt.split(' ')[0]; if(!days[d]) days[d]=i; });
-  const g = $('fcGrid'); g.innerHTML='';
-  Object.keys(days).slice(0,5).forEach(ds=>{
-    const it=days[ds];
-    const day=new Date(ds+'T12:00:00').toLocaleDateString('en-US',{weekday:'short'});
-    const el=document.createElement('div'); el.className='fd';
-    el.innerHTML=`<div class="fn">${day}</div>
-      <div class="fi"><img src="https://openweathermap.org/img/wn/${it.weather[0].icon}@2x.png" alt=""/></div>
-      <div class="ft2"><span class="fh">${Math.round(it.main.temp_max)}${u}</span><span class="fo">${Math.round(it.main.temp_min)}${u}</span></div>
-      <div class="fd2">${it.weather[0].description}</div>`;
-    g.appendChild(el);
-  });
-}
-
-/* Theme */
-function setTheme(cond,icon){
-  const night=icon&&icon.endsWith('n'), c=cond.toLowerCase();
-  document.body.className='';
-  if(c.includes('thunderstorm'))                         document.body.className='thunder';
-  else if(c.includes('drizzle')||c.includes('rain'))     document.body.className='rain';
-  else if(c.includes('snow'))                            document.body.className='snow';
-  else if(c.includes('mist')||c.includes('fog')||c.includes('haze')) document.body.className='mist';
-  else if(c.includes('cloud'))                           document.body.className='clouds';
-  else if(c.includes('clear')&&!night)                   document.body.className='clear';
-}
-
-function show(el){el.classList.remove('hidden')}
-function hide(el){el.classList.add('hidden')}
-function enc(s){return encodeURIComponent(s)}
+const BASE='https://api.openweathermap.org/data/2.5';
+const HIST_KEY='skye_history_v2',KEY_STORE='skye_api_key';
+let unit='metric',lastCity='',KEY='';
+const $=id=>document.getElementById(id);
+const SI=$('searchInput'),SB=$('searchBtn'),LO=$('loader'),EB=$('errBox'),EM=$('errMsg'),WW=$('ww'),DEF=$('def');
+function loadKey(){KEY=localStorage.getItem(KEY_STORE)||'';if(KEY)$('apiBanner').classList.add('hidden');else $('apiKeyInput').focus();}
+function saveKey(){const v=$('apiKeyInput').value.trim();if(!v)return;KEY=v;localStorage.setItem(KEY_STORE,v);$('apiBanner').classList.add('hidden');}
+function sw(u){unit=u;$('btnC').classList.toggle('on',u==='metric');$('btnF').classList.toggle('on',u==='imperial');if(lastCity)fetchW(lastCity);}
+SB.onclick=()=>go(SI.value.trim());
+SI.addEventListener('keydown',e=>{if(e.key==='Enter')go(SI.value.trim());});
+function go(city){if(!city)return;if(!KEY){show(EB);EM.textContent='Please enter your API key first.';return;}saveHistory(city);fetchW(city);}
+async function fetchW(city){lastCity=city;show(LO);hide(EB);hide(WW);hide(DEF);
+try{const[cur,fc]=await Promise.all([api(BASE+'/weather?q='+enc(city)+'&units='+unit+'&appid='+KEY),api(BASE+'/forecast?q='+enc(city)+'&units='+unit+'&appid='+KEY)]);
+let uv=null;try{const r=await api(BASE+'/uvi?lat='+cur.coord.lat+'&lon='+cur.coord.lon+'&appid='+KEY);uv=r.value;}catch(e){}
+hide(LO);renderCur(cur);renderFC(fc);renderSS(cur);renderUV(uv);renderWDir(cur.wind);show(WW);}
+catch(e){hide(LO);EM.textContent=e.message;show(EB);show(DEF);}}
+async function fetchCoords(lat,lon){show(LO);hide(EB);hide(WW);hide(DEF);
+try{const[cur,fc]=await Promise.all([api(BASE+'/weather?lat='+lat+'&lon='+lon+'&units='+unit+'&appid='+KEY),api(BASE+'/forecast?lat='+lat+'&lon='+lon+'&units='+unit+'&appid='+KEY)]);
+let uv=null;try{const r=await api(BASE+'/uvi?lat='+lat+'&lon='+lon+'&appid='+KEY);uv=r.value;}catch(e){}
+lastCity=cur.name;SI.value=cur.name;saveHistory(cur.name);hide(LO);renderCur(cur);renderFC(fc);renderSS(cur);renderUV(uv);renderWDir(cur.wind);show(WW);}
+catch(e){hide(LO);EM.textContent=e.message;show(EB);show(DEF);}}
+async function api(url){const r=await fetch(url);if(!r.ok){if(r.status===404)throw new Error('City not found.');if(r.status===401)throw new Error('Invalid API key.');throw new Error('Server error '+r.status);}return r.json();}
+function renderCur(d){const u=unit==='metric'?'°C':'°F',wu=unit==='metric'?'km/h':'mph',wm=unit==='metric'?3.6:1;
+$('cityName').textContent=d.name;$('cntry').textContent=d.sys.country;
+$('dt').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+$('tnum').textContent=Math.round(d.main.temp);$('tunit').textContent=u;
+$('condTxt').textContent=d.weather[0].description;$('condBadge').textContent=d.weather[0].main;
+$('feelsTxt').textContent='Feels like '+Math.round(d.main.feels_like)+u;
+const img=$('wicon');img.src='https://openweathermap.org/img/wn/'+d.weather[0].icon+'@2x.png';img.alt=d.weather[0].description;
+$('sHum').textContent=d.main.humidity+'%';$('sWind').textContent=Math.round(d.wind.speed*wm)+' '+wu;
+$('sVis').textContent=d.visibility?(d.visibility/1000).toFixed(1)+' km':'N/A';$('sPres').textContent=d.main.pressure+' hPa';
+setTheme(d.weather[0].main,d.weather[0].icon);}
+function renderSS(d){const tz=d.timezone||0;if(d.sys&&d.sys.sunrise&&d.sys.sunset){$('ssRise').textContent=fmtTime(d.sys.sunrise,tz);$('ssSet').textContent=fmtTime(d.sys.sunset,tz);$('ssRow').style.display='flex';}else $('ssRow').style.display='none';}
+function renderUV(uv){if(uv==null){$('uvVal').textContent='N/A';$('uvLabel').textContent='—';$('uvBar').style.width='0%';return;}
+const labels=['Low','Low','Low','Moderate','Moderate','Moderate','High','High','Very High','Very High','Very High','Extreme'];
+const colors=['#4caf50','#4caf50','#4caf50','#ffeb3b','#ffeb3b','#ffeb3b','#ff9800','#ff9800','#f44336','#f44336','#f44336','#9c27b0'];
+const idx=Math.min(Math.round(uv),11);$('uvVal').textContent=uv.toFixed(1);$('uvLabel').textContent=labels[idx]||'Extreme';
+$('uvBar').style.width=Math.min(uv/12*100,100)+'%';$('uvBar').style.background=colors[idx]||'#9c27b0';}
+function renderWDir(wind){if(!wind||wind.deg===undefined){$('wdirVal').textContent='—';$('wdirLabel').textContent='—';return;}
+const dirs=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+const idx=Math.round(wind.deg/22.5)%16;$('wdirVal').textContent=dirs[idx];
+$('wdirLabel').textContent=wind.deg+'° · '+(wind.gust?'Gusts '+Math.round(wind.gust)+' m/s':'No gust data');}
+function renderFC(data){const u=unit==='metric'?'°C':'°F';const days={};
+data.list.forEach(i=>{const date=i.dt_txt.split(' ')[0],time=i.dt_txt.split(' ')[1];if(!days[date]&&time>='11:00:00'&&time<='14:00:00')days[date]=i;});
+data.list.forEach(i=>{const d=i.dt_txt.split(' ')[0];if(!days[d])days[d]=i;});
+const g=$('fcGrid');g.innerHTML='';Object.keys(days).slice(0,5).forEach(ds=>{const it=days[ds];
+const day=new Date(ds+'T12:00:00').toLocaleDateString('en-US',{weekday:'short'});
+const el=document.createElement('div');el.className='fd';
+el.innerHTML='<div class="fn">'+day+'</div><div class="fi"><img src="https://openweathermap.org/img/wn/'+it.weather[0].icon+'@2x.png" alt=""/></div><div class="ft2"><span class="fh">'+Math.round(it.main.temp_max)+u+'</span><span class="fo">'+Math.round(it.main.temp_min)+u+'</span></div><div class="fd2">'+it.weather[0].description+'</div>';
+g.appendChild(el);});}
+function setTheme(cond,icon){const night=icon&&icon.endsWith('n'),c=cond.toLowerCase();document.body.className='';
+if(c.includes('thunderstorm'))document.body.className='thunder';
+else if(c.includes('drizzle')||c.includes('rain'))document.body.className='rain';
+else if(c.includes('snow'))document.body.className='snow';
+else if(c.includes('mist')||c.includes('fog')||c.includes('haze'))document.body.className='mist';
+else if(c.includes('cloud'))document.body.className='clouds';
+else if(c.includes('clear')&&!night)document.body.className='clear';}
+function useMyLocation(){if(!KEY){show(EB);EM.textContent='Please enter your API key first.';return;}
+if(!navigator.geolocation){show(EB);EM.textContent='Geolocation not supported.';return;}
+const btn=$('geoBtn');btn.textContent='⏳ Locating…';btn.disabled=true;
+navigator.geolocation.getCurrentPosition(pos=>{btn.textContent='📍 My Location';btn.disabled=false;fetchCoords(pos.coords.latitude,pos.coords.longitude);},
+err=>{btn.textContent='📍 My Location';btn.disabled=false;const msgs={1:'Location denied.',2:'Location unavailable.',3:'Location timed out.'};show(EB);EM.textContent=msgs[err.code]||'Could not get location.';show(DEF);},{timeout:10000});}
+function getHistory(){try{return JSON.parse(localStorage.getItem(HIST_KEY))||[];}catch{return[];}}
+function saveHistory(city){let h=getHistory().filter(c=>c.toLowerCase()!==city.toLowerCase());h.unshift(city);h=h.slice(0,6);localStorage.setItem(HIST_KEY,JSON.stringify(h));renderHistory();}
+function renderHistory(){const h=getHistory();const row=$('histRow');row.innerHTML='';if(!h.length)return;
+const label=document.createElement('span');label.className='hist-label';label.textContent='Recent:';row.appendChild(label);
+h.forEach(city=>{const btn=document.createElement('button');btn.className='hist-btn';btn.textContent=city;btn.onclick=()=>{SI.value=city;go(city);};row.appendChild(btn);});}
+function show(el){el.classList.remove('hidden');}function hide(el){el.classList.add('hidden');}
+function enc(s){return encodeURIComponent(s);}
+function fmtTime(unix,tzOff){const d=new Date((unix+(tzOff||0))*1000);let h=d.getUTCHours(),m=d.getUTCMinutes();const ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+(m+'').padStart(2,'0')+' '+ap;}
+loadKey();renderHistory();
 </script>
 </body>
-</html>
+                                                                                                      </html>
