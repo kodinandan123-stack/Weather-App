@@ -218,3 +218,162 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function fmtDate(d) { return d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'}); }
+
+
+/* ── Geolocation: Use My Location ── */
+function useMyLocation() {
+     if (!navigator.geolocation) {
+            alert('Geolocation is not supported by your browser.');
+            return;
+     }
+     const btn = document.getElementById('geoBtn');
+     if (btn) { btn.textContent = '⏳ Locating...'; btn.disabled = true; }
+     show(loader); hide(errCard); hide(weatherDiv); hide(defaultState);
+
+  navigator.geolocation.getCurrentPosition(
+         async (pos) => {
+                  const { latitude: lat, longitude: lon } = pos.coords;
+                  try {
+                             const [cur, fc] = await Promise.all([
+                                          apiFetch(`${BASE}/weather?lat=${lat}&lon=${lon}&units=${unit}&appid=${API_KEY}`),
+                                          apiFetch(`${BASE}/forecast?lat=${lat}&lon=${lon}&units=${unit}&appid=${API_KEY}`)
+                                        ]);
+                             lastCity = cur.name;
+                             searchInput.value = cur.name;
+                             saveToHistory(cur.name);
+                             hide(loader);
+                             renderCurrent(cur);
+                             renderForecast(fc);
+                             renderSunriseSunset(cur);
+                             show(weatherDiv);
+                  } catch (err) {
+                             hide(loader);
+                             errMsg.textContent = err.message || 'Could not fetch weather for your location.';
+                             show(errCard); show(defaultState);
+                  } finally {
+                             if (btn) { btn.textContent = '📍 My Location'; btn.disabled = false; }
+                  }
+         },
+         (err) => {
+                  hide(loader); show(defaultState);
+                  if (btn) { btn.textContent = '📍 My Location'; btn.disabled = false; }
+                  const msgs = {
+                             1: 'Location access denied. Please allow location in your browser settings.',
+                             2: 'Location unavailable. Try searching manually.',
+                             3: 'Location request timed out. Try again.'
+                  };
+                  errMsg.textContent = msgs[err.code] || 'Could not get your location.';
+                  show(errCard);
+         },
+     { timeout: 10000 }
+       );
+}
+
+/* ── Sunrise & Sunset Display ── */
+function renderSunriseSunset(d) {
+     const rise = d.sys && d.sys.sunrise ? fmtTime(d.sys.sunrise, d.timezone) : null;
+     const set  = d.sys && d.sys.sunset  ? fmtTime(d.sys.sunset,  d.timezone) : null;
+     if (!rise && !set) return;
+
+  // Inject sunrise/sunset row if not already present
+  const weatherDiv = document.getElementById('weather');
+     if (!weatherDiv) return;
+     let ssRow = document.getElementById('sunriseSunsetRow');
+     if (!ssRow) {
+            ssRow = document.createElement('div');
+            ssRow.id = 'sunriseSunsetRow';
+            ssRow.style.cssText = [
+                     'display:flex', 'justify-content:center', 'gap:24px',
+                     'margin-top:18px', 'padding:14px 20px',
+                     'background:rgba(255,255,255,.10)',
+                     'border:1px solid rgba(255,255,255,.18)',
+                     'border-radius:14px', 'backdrop-filter:blur(8px)',
+                     'flex-wrap:wrap'
+                   ].join(';');
+            // Insert after the stats grid — look for .stats-grid or append to weatherDiv
+       const statsGrid = weatherDiv.querySelector('.stats-grid') ||
+                                weatherDiv.querySelector('[id="sHum"]')?.closest('div')?.parentElement;
+            if (statsGrid && statsGrid.parentElement) {
+                     statsGrid.parentElement.insertBefore(ssRow, statsGrid.nextSibling);
+            } else {
+                     weatherDiv.appendChild(ssRow);
+            }
+     }
+
+  ssRow.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:rgba(255,255,255,.9);">
+            <span style="font-size:22px;">🌅</span>
+                  <div><div style="font-size:11px;opacity:.6;text-transform:uppercase;letter-spacing:.5px;">Sunrise</div>
+                             <div style="font-weight:700;font-size:16px;">${rise || '—'}</div></div>
+                                 </div>
+                                     <div style="display:flex;align-items:center;gap:8px;font-size:14px;color:rgba(255,255,255,.9);">
+                                           <span style="font-size:22px;">🌇</span>
+                                                 <div><div style="font-size:11px;opacity:.6;text-transform:uppercase;letter-spacing:.5px;">Sunset</div>
+                                                            <div style="font-weight:700;font-size:16px;">${set || '—'}</div></div>
+                                                                </div>`;
+}
+
+// Helper: convert Unix timestamp + timezone offset to local time string
+function fmtTime(unixSec, tzOffsetSec) {
+     const utcMs = unixSec * 1000;
+     const localMs = utcMs + (tzOffsetSec || 0) * 1000;
+     const d = new Date(localMs);
+     // Format as HH:MM AM/PM using UTC methods (since we've already shifted)
+  let h = d.getUTCHours(), m = d.getUTCMinutes();
+     const ampm = h >= 12 ? 'PM' : 'AM';
+     h = h % 12 || 12;
+     return `${h}:${m.toString().padStart(2,'0')} ${ampm}`;
+}
+
+/* ── Patch fetchWeather to also render sunrise/sunset ── */
+const _origFetchWeather = fetchWeather;
+async function fetchWeather(city) {
+     lastCity = city;
+     show(loader); hide(errCard); hide(weatherDiv); hide(defaultState);
+     try {
+            const [cur, fc] = await Promise.all([
+                     apiFetch(`${BASE}/weather?q=${enc(city)}&units=${unit}&appid=${API_KEY}`),
+                     apiFetch(`${BASE}/forecast?q=${enc(city)}&units=${unit}&appid=${API_KEY}`)
+                   ]);
+            hide(loader);
+            renderCurrent(cur);
+            renderForecast(fc);
+            renderSunriseSunset(cur);
+            show(weatherDiv);
+     } catch(err) {
+            hide(loader);
+            errMsg.textContent = err.message || 'Could not fetch weather.';
+            show(errCard);
+            show(defaultState);
+     }
+}
+
+/* ── Inject "My Location" button next to search on load ── */
+document.addEventListener('DOMContentLoaded', function() {
+     const sbox = document.querySelector('.search-box') || document.querySelector('.sbox');
+     if (sbox && !document.getElementById('geoBtn')) {
+            const btn = document.createElement('button');
+            btn.id = 'geoBtn';
+            btn.title = 'Use my current location';
+            btn.textContent = '📍 My Location';
+            btn.style.cssText = [
+                     'background:rgba(255,255,255,.18)',
+                     'border:1px solid rgba(255,255,255,.30)',
+                     'color:#fff',
+                     'border-radius:40px',
+                     'padding:10px 16px',
+                     'font-size:13px',
+                     'font-family:inherit',
+                     'font-weight:700',
+                     'cursor:pointer',
+                     'margin-left:8px',
+                     'white-space:nowrap',
+                     'transition:.2s ease',
+                     'flex-shrink:0'
+                   ].join(';');
+            btn.onmouseover = () => btn.style.background = 'rgba(255,255,255,.30)';
+            btn.onmouseout  = () => btn.style.background = 'rgba(255,255,255,.18)';
+            btn.onclick = useMyLocation;
+            sbox.appendChild(btn);
+     }
+});
