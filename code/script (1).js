@@ -152,3 +152,69 @@ function show(el) { el.classList.remove('hidden'); }
 function hide(el) { el.classList.add('hidden'); }
 function enc(s)   { return encodeURIComponent(s); }
 function fmtDate(d) { return d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'}); }
+
+/* ── Search History ── */
+const HISTORY_KEY = 'skye_search_history';
+const MAX_HISTORY = 5;
+
+function getHistory() {
+     try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+     catch(e) { return []; }
+}
+
+function saveToHistory(city) {
+     let history = getHistory();
+     // Remove duplicate (case-insensitive) and add to front
+  history = history.filter(c => c.toLowerCase() !== city.toLowerCase());
+     history.unshift(city);
+     history = history.slice(0, MAX_HISTORY);
+     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+     renderHistory();
+}
+
+function renderHistory() {
+     const history = getHistory();
+     let container = document.getElementById('searchHistory');
+     if (!container) return;
+     if (history.length === 0) {
+            container.innerHTML = '';
+            return;
+     }
+     container.innerHTML = '<span style="font-size:12px;opacity:.55;margin-right:6px;">Recent:</span>' +
+            history.map(city =>
+                     `<button onclick="searchFromHistory('${city.replace(/'/g, "\\'")}')"
+                             style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+                                            color:#fff;border-radius:20px;padding:4px 12px;font-size:12.5px;
+                                                           cursor:pointer;margin:2px 3px;font-family:inherit;transition:.2s ease;"
+                                                                   onmouseover="this.style.background='rgba(255,255,255,.28)'"
+                                                                           onmouseout="this.style.background='rgba(255,255,255,.15)'">${city}</button>`
+                            ).join('');
+}
+
+function searchFromHistory(city) {
+     searchInput.value = city;
+     fetchWeather(city);
+}
+
+// Patch go() to also save history
+const _origGo = go;
+function go() {
+     const city = searchInput.value.trim();
+     if (!city) return;
+     saveToHistory(city);
+     fetchWeather(city);
+}
+
+// Inject the history container below search box on page load
+document.addEventListener('DOMContentLoaded', function() {
+     const searchWrap = document.querySelector('.search-wrap') || document.querySelector('.sw');
+     if (searchWrap && !document.getElementById('searchHistory')) {
+            const histDiv = document.createElement('div');
+            histDiv.id = 'searchHistory';
+            histDiv.style.cssText = 'margin-top:8px;display:flex;align-items:center;flex-wrap:wrap;min-height:28px;';
+            searchWrap.appendChild(histDiv);
+            renderHistory();
+     }
+});
+
+function fmtDate(d) { return d.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'}); }
